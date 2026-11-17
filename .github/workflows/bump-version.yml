@@ -1,0 +1,45 @@
+# Mỗi lần push code extension lên main → tự tăng version (2.6.0 → 2.6.1).
+# Máy người dùng thấy version mới → tự tải về (tu-dong-cap-nhat.bat) hoặc hiện NEW trên icon.
+name: Tự tăng version extension
+
+on:
+  push:
+    branches: [main]
+    paths: ['extension/**']
+  workflow_dispatch: # cho phép bấm chạy tay trong tab Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-version
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tăng số cuối của version
+        id: bump
+        run: |
+          VERSION=$(node -e "
+            const fs = require('fs'), f = 'extension/manifest.json'
+            const m = JSON.parse(fs.readFileSync(f, 'utf8'))
+            const p = m.version.split('.').map(Number)
+            while (p.length < 3) p.push(0)
+            p[2]++
+            m.version = p.join('.')
+            fs.writeFileSync(f, JSON.stringify(m, null, 2) + '\n')
+            console.log(m.version)
+          ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # Commit bằng GITHUB_TOKEN không kích hoạt lại workflow → không bị lặp
+      - name: Commit version mới
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "chore: extension v${{ steps.bump.outputs.version }}"
+          git push
