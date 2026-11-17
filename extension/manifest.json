@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "Lenful – Nạp vào sheet",
+  "version": "2.6.0",
+  "description": "Bôi đen đoạn chat, chuột phải, nạp thẳng vào Google Sheet kèm ảnh chụp màn hình.",
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting",
+    "alarms"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Chụp vùng màn hình và nạp vào sheet"
+    },
+    "send-text": {
+      "suggested_key": {
+        "default": "Alt+Shift+X"
+      },
+      "description": "Lưu nhanh đoạn chat đang bôi đen"
+    }
+  },
+  "host_permissions": [
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*",
+    "https://api.imgbb.com/*",
+    "https://raw.githubusercontent.com/*",
+    "https://web.telegram.org/*",
+    "https://*.messenger.com/*",
+    "https://*.facebook.com/*",
+    "https://chat.zalo.me/*",
+    "https://lenful.com/*",
+    "https://*.lenful.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.telegram.org/*",
+        "https://*.messenger.com/*",
+        "https://*.facebook.com/*",
+        "https://chat.zalo.me/*",
+        "https://lenful.com/*",
+        "https://*.lenful.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": [
+        "chat-hooks.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "overlay.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Nạp vào sheet (chụp màn hình trang này)",
+    "default_icon": "icon.png"
+  },
+  "options_page": "options.html",
+  "icons": {
+    "128": "icon.png"
+  }
+}

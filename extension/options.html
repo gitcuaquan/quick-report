@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Cài đặt – Nạp vào sheet</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page">
+  <h1>Cài đặt "Nạp vào sheet"</h1>
+
+  <label>URL script
+    <small>Dạng https://script.google.com/macros/s/…/exec — người quản lý Sheet gửi cho bạn.</small>
+    <input id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  </label>
+
+  <label>Khoá bí mật
+    <input id="secret" type="password">
+  </label>
+
+  <label>Tab bạn phụ trách
+    <small>Bấm "Kết nối" để tải danh sách tab từ Sheet.</small>
+    <div class="inline">
+      <select id="sheet"></select>
+      <button id="connect" class="secondary" type="button">Kết nối</button>
+    </div>
+  </label>
+
+  <div class="actions">
+    <button id="save" type="button">Lưu</button>
+  </div>
+  <div id="status"></div>
+
+  <script src="api.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
