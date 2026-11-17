@@ -1,30 +1,56 @@
-// Chạy sẵn trên các trang chat (Telegram, Messenger, Zalo), ở document_start để đăng ký trước script của trang.
+// Chạy trên mọi trang (content script + tự chèn vào tab đang mở khi cài / cập nhật).
+// Tự bắt phím tắt thay vì dựa vào chrome://extensions/shortcuts (Chrome hay không gán được):
+//   Alt+Shift+X → lưu nhanh đoạn đang bôi đen
+//   Alt+Shift+S → chụp vùng màn hình
+// Nếu Chrome có gán phím thì trình duyệt xử lý trước, trang không nhận được → không chạy trùng.
 (() => {
-  if (window.__napHooks) return
-  window.__napHooks = true
+  // Bản cũ còn trong trang (extension vừa cập nhật) → gỡ để bản mới xử lý
+  window.__napHooks?.dispose?.()
 
-  // Alt+Shift+X: lưu nhanh đoạn đang bôi đen. Tự bắt phím ở đây vì Chrome có thể không gán được
-  // phím tắt của extension (trùng với extension/chương trình khác).
-  // Nếu Chrome đã gán phím này thì trình duyệt xử lý trước, trang không nhận được → không gửi trùng.
-  addEventListener('keydown', (e) => {
-    if (!e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey || e.code !== 'KeyX' || e.repeat) return
+  const KEYS = { KeyX: 'nap-quick', KeyS: 'nap-capture' }
+
+  // Extension đã reload/cập nhật mà script này là bản cũ → chrome.runtime.id mất
+  const alive = () => { try { return !!chrome.runtime?.id } catch (e) { return false } }
+
+  function onKey (e) {
+    if (!e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey || e.repeat) return
+    const type = KEYS[e.code]
+    if (!type) return
+    // Bản cũ (extension đã reload): sendMessage ném lỗi NGAY → tự gỡ và KHÔNG chặn phím,
+    // để bộ bắt phím của bản mới (đã được chèn lại) xử lý chính phím này.
+    let sending
+    try {
+      if (!alive()) throw new Error('orphaned')
+      sending = chrome.runtime.sendMessage({ type, text: getSelection().toString() })
+    } catch (err) {
+      dispose()
+      return
+    }
     e.preventDefault()
     e.stopImmediatePropagation()
-    chrome.runtime.sendMessage({ type: 'nap-quick', text: getSelection().toString() }).catch(() => {
-      toast('Extension vừa được cập nhật. Tải lại trang (F5) rồi thử lại.', 'err')
-    })
-  }, true)
+    sending.catch(() => toast('Extension vừa được cập nhật. Tải lại trang (F5) rồi thử lại.', 'err'))
+  }
 
   // Telegram tự vẽ menu chuột phải nên menu Chrome (có "Nạp vào sheet") không hiện.
   // Đang bôi đen chữ → chặn handler của trang để menu Chrome hiện. Không bôi đen → menu Telegram như cũ.
-  if (location.hostname === 'web.telegram.org') {
-    addEventListener('contextmenu', (e) => {
-      if (getSelection().toString().trim()) e.stopImmediatePropagation()
-    }, true)
+  function onContextMenu (e) {
+    if (location.hostname === 'web.telegram.org' && getSelection().toString().trim()) e.stopImmediatePropagation()
+  }
+
+  function onMessage (m) {
+    if (m?.type === 'nap-toast') toast(m.msg, m.kind)
+  }
+
+  function dispose () {
+    removeEventListener('keydown', onKey, true)
+    removeEventListener('contextmenu', onContextMenu, true)
+    try { chrome.runtime.onMessage.removeListener(onMessage) } catch (e) {}
+    if (window.__napHooks?.dispose === dispose) window.__napHooks = null
   }
 
   // Thông báo nhỏ góc màn hình (background gửi sang khi không tự chèn script được)
   function toast (msg, kind) {
+    if (window !== top) return
     let el = document.getElementById('__nap_toast')
     if (!el) {
       el = document.createElement('div')
@@ -38,7 +64,8 @@
     if (kind !== 'busy') window.__napToastTimer = setTimeout(() => el.remove(), kind === 'err' ? 6000 : 2500)
   }
 
-  chrome.runtime.onMessage.addListener((m) => {
-    if (m?.type === 'nap-toast') toast(m.msg, m.kind)
-  })
+  addEventListener('keydown', onKey, true)
+  addEventListener('contextmenu', onContextMenu, true)
+  chrome.runtime.onMessage.addListener(onMessage)
+  window.__napHooks = { dispose }
 })()

@@ -34,16 +34,9 @@ Extension Chrome giúp ghi phản ánh vào Google Sheet trong vài giây: bôi 
 Trong thư mục `D:\quick-report`, **bấm đúp `tu-dong-cap-nhat.bat`**.
 Cửa sổ báo "Đã bật tự cập nhật" là xong.
 
-### Bước 5 – Kiểm tra phím tắt
+### Phím tắt
 
-Mở `chrome://extensions/shortcuts`, tìm **Lenful – Nạp vào sheet**, đảm bảo đã gán:
-
-| Chức năng | Phím |
-|---|---|
-| Chụp vùng màn hình và nạp vào sheet | `Alt+Shift+S` |
-| Lưu nhanh đoạn chat đang bôi đen | `Alt+Shift+X` |
-
-Nếu ô phím trống (bị trùng với chương trình khác) → bấm vào ô và gõ lại phím.
+**Không cần cài.** `Alt+Shift+X` và `Alt+Shift+S` chạy ngay trên mọi trang, kể cả tab đã mở từ trước — không phải F5, không phải vào `chrome://extensions/shortcuts`.
 
 ---
 
@@ -115,7 +108,7 @@ Dòng mới được ghi vào dòng trống đầu tiên của tab (dòng chỉ 
 | Sai khoá bí mật | Hỏi lại khoá, điền vào Tùy chọn |
 | Không tìm thấy tab trong Sheet | Tùy chọn → **Kết nối** → chọn lại tab → **Lưu** |
 | Thiếu link màn hình | Nhập link lenful.com / localhost vào ô Link màn hình |
-| Bấm phím tắt không có gì xảy ra | **F5** trang đang mở; kiểm tra lại Bước 5 |
+| Bấm phím tắt không có gì xảy ra | Trang `chrome://…` và Chrome Web Store không cho extension chạy. Trang thường: **F5** rồi thử lại |
 | Extension vừa được cập nhật. Tải lại trang | **F5** trang đang mở |
 
 ---

@@ -50,7 +50,17 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({ id: MENU_ID, title: 'Nạp vào sheet', contexts: ['selection', 'image', 'page'] })
   })
+  injectHooksIntoOpenTabs()
 })
+
+// Cài mới / reload / tự cập nhật: chèn bộ bắt phím vào mọi tab đang mở → không cần F5.
+// (content_scripts chỉ tự chạy ở trang mở SAU khi cài)
+async function injectHooksIntoOpenTabs () {
+  const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] })
+  for (const t of tabs) {
+    chrome.scripting.executeScript({ target: { tabId: t.id, allFrames: true }, files: ['chat-hooks.js'] }).catch(() => {})
+  }
+}
 
 // Tiêu đề tab Messenger có dạng "(3) Tên người | Messenger" — bỏ phần thừa để lấy tên hội thoại.
 function conversationName (title = '') {
@@ -223,9 +233,13 @@ async function finishOverlay (id, result) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  // Phím lưu nhanh bắt trong trang chat (chat-hooks.js) — không phụ thuộc phím tắt của Chrome
+  // Phím tắt bắt trong trang (chat-hooks.js) — không phụ thuộc chrome://extensions/shortcuts
   if (msg?.type === 'nap-quick' && sender.tab) {
     quickSend(sender.tab, String(msg.text || '').trim())
+    return
+  }
+  if (msg?.type === 'nap-capture' && sender.tab) {
+    captureAndSend(sender.tab)
     return
   }
   if (msg?.type === 'nap-get') {
