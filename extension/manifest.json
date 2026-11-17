@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lenful – Nạp vào sheet",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Bôi đen đoạn chat, chuột phải, nạp thẳng vào Google Sheet kèm ảnh chụp màn hình.",
   "permissions": [
     "contextMenus",
