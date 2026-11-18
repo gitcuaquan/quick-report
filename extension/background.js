@@ -279,9 +279,14 @@ async function send (tab, { text = '', image = null, screen = '', link = '' }) {
   busy++
   try {
     const images = []
+    let expireWarn = ''
     if (image) {
       await toast(tab.id, 'Đang upload ảnh…')
       images.push(await uploadToImgbb(image, settings.imgbbKey))
+      // Ảnh phải lưu vĩnh viễn. imgbb vẫn đặt hạn xoá → tài khoản đang bật "Auto delete"
+      if (lastImgbbExpiration > 0) {
+        expireWarn = ` · ⚠ Ảnh sẽ bị imgbb xoá sau ${Math.ceil(lastImgbbExpiration / 86400)} ngày — tắt "Auto delete" trong tài khoản imgbb`
+      }
     }
     await toast(tab.id, 'Đang gửi…')
     const data = await callScript(settings.scriptUrl, {
@@ -300,7 +305,7 @@ async function send (tab, { text = '', image = null, screen = '', link = '' }) {
     })
     const { latestVersion } = await chrome.storage.local.get('latestVersion')
     const note = latestVersion ? ` · Có bản mới v${latestVersion}: bấm đúp cap-nhat.bat` : ''
-    await toast(tab.id, `✓ Đã nạp vào "${data.sheet || settings.sheet}" (dòng ${data.row})${note}`, 'ok')
+    await toast(tab.id, `✓ Đã nạp vào "${data.sheet || settings.sheet}" (dòng ${data.row})${expireWarn}${note}`, expireWarn ? 'err' : 'ok')
   } catch (e) {
     await toast(tab.id, e.message, 'err')
   } finally {

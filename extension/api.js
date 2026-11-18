@@ -30,8 +30,12 @@ async function getSettings () {
 }
 
 // img = { kind: 'blob', data: Blob } | { kind: 'data', data: 'data:image/...;base64,...' } | { kind: 'url', data: 'https://...' }
-// Trả về link ảnh trên imgbb
+// Trả về link ảnh trên imgbb. Ảnh lưu VĨNH VIỄN: không gửi tham số "expiration"
+// (imgbb chỉ tự xoá khi có expiration, hoặc tài khoản bật "Auto delete").
+// Nếu imgbb vẫn trả về thời hạn xoá → lastImgbbExpiration > 0 để background cảnh báo.
+let lastImgbbExpiration = 0
 async function uploadToImgbb (img, key) {
+  lastImgbbExpiration = 0
   const form = new FormData()
   form.append('key', key)
   if (img.kind === 'blob') form.append('image', img.data, 'screenshot.jpg')
@@ -45,6 +49,7 @@ async function uploadToImgbb (img, key) {
   }
   const data = await res.json().catch(() => null)
   if (!data?.success) throw new Error(`Upload ảnh thất bại: ${data?.error?.message || `HTTP ${res.status}`}`)
+  lastImgbbExpiration = Number(data.data.expiration) || 0 // giây; 0 = không bao giờ xoá
   return data.data.url
 }
 
